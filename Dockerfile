@@ -5,9 +5,6 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# If you later need native builds (psycopg2/mysqlclient/Pillow), uncomment:
-# RUN apk add --no-cache build-base
-
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
 COPY ./app /app
@@ -18,11 +15,15 @@ ARG DEV=false
 
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
+    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache --virtual .tmp-build-dev \
+        build-base postgresql-dev musl-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ "$DEV" = "true" ]; then \
         /py/bin/pip install -r /tmp/requirements.dev.txt ; \
     fi && \
-    rm -f /tmp/requirements.txt /tmp/requirements.dev.txt && \
+    rm -rf /tmp && \
+    apk del .tmp-build-dev && \
     adduser -D -H -s /sbin/nologin django-user && \
     chown -R django-user:root /app /py
 
