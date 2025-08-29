@@ -1,9 +1,10 @@
-services: 
+services:
   app:
     build:
       context: .
       args:
-        - DEV=true
+        DEV: "true"
+    working_dir: /app
     ports:
       - "8000:8000"
     volumes:
